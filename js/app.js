@@ -6,6 +6,15 @@ var bounceTimer;
 
 var markers = [];
 
+var gmapsTimeout = setTimeout(function() {
+
+    if(!map) {
+        alert("Google Maps are not available. Please try again later!!!");
+        return;
+    }
+
+}, 8000);
+
 
 function init() {
 
@@ -15,91 +24,7 @@ function init() {
         zoom: 10
     });
 
-    if(!map) {
-        alert("Google Maps are not available. Please try again later!!!");
-        return;
-    }
-
-    // Famous location of NewYork City
-
-    var marklocations = [
-        {
-            title: 'Central Park',
-            location: {lat: 40.785091 ,lng: -73.968285 },
-            id: 'ChIJ4zGFAZpYwokRGUGph3Mf37k'
-        },
-        {
-            title: 'Empire State Building',
-            location: {lat: 40.748817, lng: -73.985428},
-            id: 'ChIJaXQRs6lZwokRY6EFpJnhNNE'
-        },
-        {
-            title: 'Statue of Liberty',
-            location: {lat: 40.689247,lng: -74.044502},
-            id: 'ChIJPTacEpBQwokRKwIlDXelxkA'
-        },
-        {
-            title: 'Rockefeller Center',
-            location: {lat: 40.758438,lng: -73.978912},
-            id: 'ChIJ9U1mz_5YwokRosza1aAk0jM'
-        },
-        {
-            title: 'Grand Central Station',
-            location: {lat: 40.752998,lng: -73.977056},
-            id: 'ChIJhRwB-yFawokRi0AhGH87UTc'
-        }
-    ];
-
-
-
-    var infoWindow = new google.maps.InfoWindow();
-
-    // Get position and title from array
-
-    for (var i = 0; i < marklocations.length; i++) {
-        var position = marklocations[i].location;
-        var title = marklocations[i].title;
-        var locId = marklocations[i].id;
-
-            var marker = new google.maps.Marker({
-                map: map,
-                title: title,
-                animation: google.maps.Animation.DROP,
-                position: position,
-                id: locId
-            });
-
-            marker.addListener('click', function() {
-                viewInfoWindow(this, infoWindow);
-            });
-
-
-        markers.push(marker);
-
-        //Event listeners for animating the marker
-
-        google.maps.event.addListener(marker, 'mouseover', function() {
-                if (this.getAnimation() === null || typeof this.getAnimation() === undefined) {
-                    clearTimeout(bounceTimer);
-
-                    var that = this;
-
-                    bounceTimer = setTimeout(function() {
-                        that.setAnimation(google.maps.Animation.BOUNCE);
-                    },
-                    1);
-                }
-            });
-
-            google.maps.event.addListener(marker, 'mouseout', function() {
-
-                if (this.getAnimation() !== null) {
-                    this.setAnimation(null);
-                }
-                clearTimeout(bounceTimer);
-            });
-     }
-
+    clearTimeout(gmapsTimeout);
 
 
     // Search box code
@@ -126,11 +51,105 @@ function init() {
 }
 
 
+var locArray = [
+
+    {
+            title: 'Central Park',
+            location: {lat: 40.785091 ,lng: -73.968285 },
+            id: 'ChIJ4zGFAZpYwokRGUGph3Mf37k',
+            no: 1
+        },
+        {
+            title: 'Empire State Building',
+            location: {lat: 40.748817, lng: -73.985428},
+            id: 'ChIJaXQRs6lZwokRY6EFpJnhNNE',
+            no: 2
+        },
+        {
+            title: 'Statue of Liberty',
+            location: {lat: 40.689247,lng: -74.044502},
+            id: 'ChIJPTacEpBQwokRKwIlDXelxkA',
+            no: 1
+        },
+        {
+            title: 'Rockefeller Center',
+            location: {lat: 40.758438,lng: -73.978912},
+            id: 'ChIJ9U1mz_5YwokRosza1aAk0jM',
+            no: 2
+        },
+        {
+            title: 'Grand Central Station',
+            location: {lat: 40.752998,lng: -73.977056},
+            id: 'ChIJhRwB-yFawokRi0AhGH87UTc',
+            no: 3
+        }
+
+    ];
+
+
+var Location = function(data) {
+    this.title = ko.observable(data.title);
+    this.location = ko.observable(data.location);
+    this.locId = ko.observable(data.id);
+    this.locNo = ko.observable(data.no);
+
+    this.filterList = ko.observable(true);
+}
+
+
 // Knockout ViewModel code which includes wikipedia api
 
 var ViewModel = function() {
 
     var self = this;
+
+    this.locList = ko.observableArray([]);
+
+    locArray.forEach(function(loc) {
+        self.locList.push( new Location(loc) );
+    });
+
+    this.currentLocation = ko.observable( this.locList()[0] );
+
+    this.setLocation = function(clickedLoc) {
+        self.currentLocation(clickedLoc);
+
+    }
+
+    touristAtt = function() {
+        var length = self.locList().length;
+        for (var i = 0; i < length; i++) {
+            if (self.locList()[i].no === 1) {
+                self.locList()[i].filterlist(true);
+                buttonMarkers(self.locList()[i]);
+            }
+        }
+    };
+
+    businessPlace = function() {
+        var length = self.locList().length;
+        for (var i = 0; i < length; i++) {
+            if (self.locList()[i].no === 2) {
+                self.locList()[i].filterlist(true);
+            }
+        }
+    };
+
+    transPort = function() {
+        var length = self.locList().length;
+        for (var i = 0; i < length; i++) {
+            if (self.locList()[i].no === 3) {
+                self.locList()[i].filterlist(true);
+            }
+        }
+    }
+
+    all = function() {
+        var length = self.locList().length;
+        for (var i = 0; i < length; i++) {
+                self.locList()[i].filterlist(true);
+        }
+    }
 
     getWiki = function() {
 
@@ -139,17 +158,21 @@ var ViewModel = function() {
 
            var wikiurl = 'https://en.wikipedia.org/w/api.php?action=opensearch&search=' + wikiTitle + '&format=json&callback=wikiCallback';
 
-            $.ajax({
+                $.ajax({
                 url: wikiurl,
                 dataType: 'jsonp',
-            }).done(function(response) {
+                }).done(function(response) {
                 var wikiInfo = response[1];
                 var wikiStore = wikiInfo[0];
                 var url = 'http://en.wikipedia.org/wiki/' + wikiStore;
                 $('.wiki-links').append('<li><a href="' + url + '">' + wikiStore + '</a></li>');
-                }).fail(function() {
-                     alert("Failed to get Wikipedia response");
-                }, 8000);
+                }).error(function() {
+                    wikiRequestTimeout = setTimeout(function() {
+                      alert("Failed to get wikipedia resources!!1");
+                 }, 8000);
+
+                });
+
     };
 
 
@@ -157,6 +180,30 @@ var ViewModel = function() {
 
 
 ko.applyBindings(new ViewModel());
+
+
+
+    function buttonMarkers(loc) {
+            var infoWindow = new google.maps.InfoWindow();
+
+            var position = loc.location;
+            var title = loc.title;
+            var locId = loc.id;
+
+            var marker = new google.maps.Marker({
+                map: map,
+                title: title,
+                animation: google.maps.Animation.DROP,
+                position: position,
+                id: locId
+            });
+
+                toggleBounce(marker);
+                viewInfoWindow(marker, infoWindow);
+
+    }
+
+
 
 
     // Hard coded locations info window details.
@@ -168,6 +215,14 @@ ko.applyBindings(new ViewModel());
             getPlaces(marker, infowindow);
         }
     }
+
+    function toggleBounce(marker) {
+            if (marker.getAnimation() !== null) {
+                marker.setAnimation(null);
+            } else {
+                marker.setAnimation(google.maps.Animation.BOUNCE);
+            }
+        }
 
 
    // This function will loop through the listings and hide all of them

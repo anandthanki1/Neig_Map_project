@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <script type="text/javascript" src="js/jquery.min.js"></script>
     <link rel="stylesheet" type="text/css" href="css/jasny-bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+   <!--  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css"> -->
     <script type="text/javascript" src="js/jasny-bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.3.0/knockout-debug.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.js"></script>
@@ -14,8 +14,6 @@
         #gmap {
             height: 100%;
             width: 100%;
-            position: absolute;
-            z-index: 1000000;
         }
         html,body {
             height: 100%;
@@ -26,7 +24,6 @@
             width: 100%;
             height: 30px;
             line-height: 25px;
-            position: relative;
         }
         h2 {
             padding: 0 11px 0 13px;
@@ -47,21 +44,21 @@
             margin-left: 3px;
             padding: 0 ;
             width: 96%;
-            position: relative;
         }
         button {
             font-size: 19px;
             cursor: pointer;
-            position: relative;
         }
         .but {
             font-size: 13px;
             border: #1d1f20  solid;
             cursor: pointer;
-            position: relative;
         }
-        #wikihead {
+        #wikihead, li {
             cursor: pointer;
+        }
+        #filter {
+            list-style: none;
         }
         @media screen and (min-width: 200px) and (max-width: 580px)
         {
@@ -97,13 +94,20 @@
 <header>
 <nav id="myNavmenu" class="navmenu navmenu-default navmenu-fixed-left offcanvas">
   <div>
-  <h2 class="navmenu-brand"> Famous Places of New York marked on Map</h2>
-      <ul class="nav navmenu-nav">
-          <li> Central Park </li>
-          <li> Empire State Building </li>
-          <li> Statue of Liberty </li>
-          <li> Rockefeller Center </li>
-          <li> Grand Central Station </li>
+  <h2 class="navmenu-brand"> Famous Places of New York </h2>
+  <li class="dropdown" id="filter">
+      <h3 class="dropdown-toggle navmenu-brand" data-toggle="dropdown"> Filter: <b class="caret"></b></h3>
+      <ul class="dropdown-menu navmenu-nav" role="menu">
+        <li data-bind="click: touristAtt"> Tourist's Attraction </li>
+        <li data-bind="click: businessPlace"> Business Places </li>
+        <li data-bind="click: transPort">  Transportation </a></li>
+        <li data-bind="click: all"> All Places </li>
+      </ul>
+    </li>
+    </div>
+    <hr>
+      <ul class="nav navmenu-nav" id="filterlist" data-bind="foreach: locList">
+          <li data-bind="text: title, click: $parent.setLocation"></li>
       </ul>
   </div>
   <div class="wiki-container">
