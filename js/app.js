@@ -6,14 +6,10 @@ var bounceTimer;
 
 var markers = [];
 
-var gmapsTimeout = setTimeout(function() {
+function errorHandling() {
 
-    if(!map) {
         alert("Google Maps are not available. Please try again later!!!");
-        return;
     }
-
-}, 8000);
 
 
 function init() {
@@ -21,32 +17,48 @@ function init() {
 
     map = new google.maps.Map(document.getElementById('gmap'), {
         center: { lat: 40.730610, lng: -73.935242},
-        zoom: 10
+        zoom: 11
     });
 
-    clearTimeout(gmapsTimeout);
+    var infoWindow = new google.maps.InfoWindow();
+
+    var length = locArray.length;
+
+    for (var i = 0; i < length; i++) {
+        var position = locArray[i].location;
+        var title = locArray[i].title;
+        var locId = locArray[i].id;
+
+            var marker = new google.maps.Marker({
+                map: map,
+                title: title,
+                animation: google.maps.Animation.DROP,
+                position: position,
+                id: locId
+            });
+
+            google.maps.event.addListener(marker, "click", function() {
+                //Event listeners for animating the marker
+                toggleBounce(this);
+                viewInfoWindow(this, infoWindow);
+            });
 
 
-    // Search box code
+        markers.push(marker);
 
-    var searchBox = new google.maps.places.SearchBox(document.getElementById('schAdd'));
+        //Event listeners for animating the marker
 
-    var input = document.getElementById('pac-input');
-
-    map.controls[google.maps.ControlPosition.TOP_RIGHT].push(input);
-
-    searchBox.setBounds(map.getBounds());
-
-    // When user selects any prediction from the Picklist
-
-    searchBox.addListener('schAdd', function() {
-
-        searchPlaces(this);
-    });
-
-    // After selecting the prediction user clicks GO button
-
-    document.getElementById('letsgo').addEventListener('click', nearByPlaces);
+        function toggleBounce(marker) {
+            if (marker.getAnimation() !== null) {
+                marker.setAnimation(null);
+            } else {
+                marker.setAnimation(google.maps.Animation.BOUNCE);
+                setTimeout(function() {
+                        marker.setAnimation(null);
+                }, 1800)
+            }
+        }
+    }
 
 }
 
@@ -56,32 +68,27 @@ var locArray = [
     {
             title: 'Central Park',
             location: {lat: 40.785091 ,lng: -73.968285 },
-            id: 'ChIJ4zGFAZpYwokRGUGph3Mf37k',
-            no: 1
-        },
-        {
-            title: 'Empire State Building',
-            location: {lat: 40.748817, lng: -73.985428},
-            id: 'ChIJaXQRs6lZwokRY6EFpJnhNNE',
-            no: 2
+            id: 'ChIJ4zGFAZpYwokRGUGph3Mf37k'
         },
         {
             title: 'Statue of Liberty',
             location: {lat: 40.689247,lng: -74.044502},
-            id: 'ChIJPTacEpBQwokRKwIlDXelxkA',
-            no: 1
+            id: 'ChIJPTacEpBQwokRKwIlDXelxkA'
+        },
+        {
+            title: 'Empire State Building',
+            location: {lat: 40.748817, lng: -73.985428},
+            id: 'ChIJaXQRs6lZwokRY6EFpJnhNNE'
         },
         {
             title: 'Rockefeller Center',
             location: {lat: 40.758438,lng: -73.978912},
-            id: 'ChIJ9U1mz_5YwokRosza1aAk0jM',
-            no: 2
+            id: 'ChIJ9U1mz_5YwokRosza1aAk0jM'
         },
         {
             title: 'Grand Central Station',
             location: {lat: 40.752998,lng: -73.977056},
-            id: 'ChIJhRwB-yFawokRi0AhGH87UTc',
-            no: 3
+            id: 'ChIJhRwB-yFawokRi0AhGH87UTc'
         }
 
     ];
@@ -92,8 +99,6 @@ var Location = function(data) {
     this.location = ko.observable(data.location);
     this.locId = ko.observable(data.id);
     this.locNo = ko.observable(data.no);
-
-    this.filterList = ko.observable(true);
 }
 
 
@@ -103,75 +108,99 @@ var ViewModel = function() {
 
     var self = this;
 
-    this.locList = ko.observableArray([]);
+    query = ko.observable();
 
-    locArray.forEach(function(loc) {
-        self.locList.push( new Location(loc) );
-    });
+    locList = ko.observableArray(locArray);
 
-    this.currentLocation = ko.observable( this.locList()[0] );
+    selectedOption = ko.observable('');
 
-    this.setLocation = function(clickedLoc) {
-        self.currentLocation(clickedLoc);
+    // Filter Functionality
+
+    locList.title = ko.observable();
+
+    filterList = ko.observableArray([
+
+    {
+        category: 'Tourist Attraction'
+    },
+    {
+        category: 'Business Places'
+    },
+    {
+        category: 'Transportation'
+    }
+
+        ]);
+
+
+
+    getCurrentLocations = function() {
+        var selectedVal = this.selectedOption();
+
+        if (!selectedVal)
+            return this.locList;
+
+        if (selectedVal) {
+            if (this.filterList()[0].category === 'Tourist Attraction') {
+               return this.locList.slice(0, 2);
+            }
+
+             if (this.filterList()[1].category === 'Business Places') {
+               return this.locList.slice(2, 4);
+            }
+
+             if (this.filterList()[2].category === 'Transportation') {
+             return this.locList.slice(4);
+            }
+        }
+
+            return this.locList().filter(function(f) {
+                return f.id == selectedVal.id;
+            });
 
     }
 
-    touristAtt = function() {
-        var length = self.locList().length;
-        for (var i = 0; i < length; i++) {
-            if (self.locList()[i].no === 1) {
-                self.locList()[i].filterlist(true);
-                buttonMarkers(self.locList()[i]);
-            }
-        }
-    };
+        this.details = ko.observable();
 
-    businessPlace = function() {
-        var length = self.locList().length;
-        for (var i = 0; i < length; i++) {
-            if (self.locList()[i].no === 2) {
-                self.locList()[i].filterlist(true);
-            }
-        }
-    };
+        title = ko.observable('');
 
-    transPort = function() {
-        var length = self.locList().length;
-        for (var i = 0; i < length; i++) {
-            if (self.locList()[i].no === 3) {
-                self.locList()[i].filterlist(true);
-            }
-        }
-    }
-
-    all = function() {
-        var length = self.locList().length;
-        for (var i = 0; i < length; i++) {
-                self.locList()[i].filterlist(true);
-        }
-    }
-
-    getWiki = function() {
+        getMarkInfo = function() {
 
            // Wikipedia Api code
-           var wikiTitle = document.getElementById('schAdd').value;
+           var wikiTitle = this.title;
 
-           var wikiurl = 'https://en.wikipedia.org/w/api.php?action=opensearch&search=' + wikiTitle + '&format=json&callback=wikiCallback';
+                   title = this.title;
 
-                $.ajax({
+                   var wikiurl = 'https://en.wikipedia.org/w/api.php?action=opensearch&search=' + wikiTitle + '&format=json&callback=wikiCallback';
+
+              $.ajax({
                 url: wikiurl,
                 dataType: 'jsonp',
                 }).done(function(response) {
-                var wikiInfo = response[1];
-                var wikiStore = wikiInfo[0];
-                var url = 'http://en.wikipedia.org/wiki/' + wikiStore;
-                $('.wiki-links').append('<li><a href="' + url + '">' + wikiStore + '</a></li>');
-                }).error(function() {
-                    wikiRequestTimeout = setTimeout(function() {
-                      alert("Failed to get wikipedia resources!!1");
-                 }, 8000);
+                    var wikiInfo = response[1];
+                    var wikiStore = wikiInfo[0];
+                    var url = 'http://en.wikipedia.org/wiki/' + wikiStore;
+                    var vm = ko.dataFor(document.body);
+                    vm.details('<li><a href="' + url + '">' + wikiStore + '</a></li>');
+                    }).fail(function() {
+                             alert("Failed to get wikipedia resources!!1");
+                   });
 
-                });
+                    if (title === locArray[0].title) {
+                        showMarkers(0);
+                    }
+                    if (title === locArray[1].title) {
+                        showMarkers(1);
+                    }
+                    if (title === locArray[2].title) {
+                        showMarkers(2);
+                    }
+                    if (title === locArray[3].title) {
+                        showMarkers(3);
+                    }
+                    if (title === locArray[4].title) {
+                        showMarkers(4);
+                    }
 
     };
 
@@ -180,29 +209,6 @@ var ViewModel = function() {
 
 
 ko.applyBindings(new ViewModel());
-
-
-
-    function buttonMarkers(loc) {
-            var infoWindow = new google.maps.InfoWindow();
-
-            var position = loc.location;
-            var title = loc.title;
-            var locId = loc.id;
-
-            var marker = new google.maps.Marker({
-                map: map,
-                title: title,
-                animation: google.maps.Animation.DROP,
-                position: position,
-                id: locId
-            });
-
-                toggleBounce(marker);
-                viewInfoWindow(marker, infoWindow);
-
-    }
-
 
 
 
@@ -216,13 +222,6 @@ ko.applyBindings(new ViewModel());
         }
     }
 
-    function toggleBounce(marker) {
-            if (marker.getAnimation() !== null) {
-                marker.setAnimation(null);
-            } else {
-                marker.setAnimation(google.maps.Animation.BOUNCE);
-            }
-        }
 
 
    // This function will loop through the listings and hide all of them
@@ -233,109 +232,24 @@ ko.applyBindings(new ViewModel());
         }
     }
 
-    // This function fires when the user selects a searchbox picklist item.
 
-    function searchPlaces(searchBox) {
-        hideMarkers(markers);
-        var places = searchBox.getPlaces();
+    // This function create markers for each place clicked from list.
 
-        //For each place, get icon, name and location
-        if(places.length === 0) {
-            window.alert('We did not find any places matching that search');
-        } else {
-            showMarkers(places);
-        }
-    }
-
-
-    // This function fire when user selects GO on places search.
-    // It will do a nearby search using the entered query string or place.
-
-    function nearByPlaces() {
-        var bounds = map.getBounds();
-        hideMarkers(markers);
-
-        var placesService = new google.maps.places.PlacesService(map);
-        placesService.textSearch({
-            query: document.getElementById("schAdd").value,
-            bounds: bounds
-        }, function(results, status) {
-            if(status === google.maps.places.PlacesServiceStatus.OK) {
-                showMarkers(results);
-            }
-        });
-    }
-
-    // Function specially for search box entered locations
-    // This function create markers for each place found in either places search
-
-    function showMarkers(places) {
-        var bounds = new google.maps.LatLngBounds();
-        for(var i= 0; i < places.length; i++) {
-            var place = places[i];
-            var icon = {
-                url: place.icon,
-                size: new google.maps.Size(40, 40),
-                origin: new google.maps.Point(0, 0),
-                anchor: new google.maps.Point(15, 34),
-                scaledSize: new google.maps.Size(25, 25)
-            };
-
-            // Create a marker for each place
-
-            var marker = new google.maps.Marker({
-                map: map,
-                icon: icon,
-                title: place.name,
-                animation: google.maps.Animation.DROP,
-                position: place.geometry.location,
-                id: place.place_id
-            });
-
-            google.maps.event.addListener(marker, 'mouseover', function() {
-                if (this.getAnimation() === null || typeof this.getAnimation() === undefined) {
-                    clearTimeout(bounceTimer);
-
-                    var that = this;
-
-                    bounceTimer = setTimeout(function() {
-                        that.setAnimation(google.maps.Animation.BOUNCE);
-                    },
-                    1);
-                }
-            });
-
-            google.maps.event.addListener(marker, 'mouseout', function() {
-
-                if (this.getAnimation() !== null) {
-                    this.setAnimation(null);
-                }
-                clearTimeout(bounceTimer);
-            });
-
-
-// Single infowindow for place details
-
-    var infoWindow = new google.maps.InfoWindow();
-
-// if a marker is clicked, show place details
-
-    marker.addListener('click', function() {
-        if(infoWindow.marker == this) {
-            console.log("This Infowindow already is on this marker!");
-        } else {
-            getPlaces(this, infoWindow);
-        }
-    });
-            markers.push(marker);
-            if(place.geometry.viewport) {
-                bounds.union(place.geometry.viewport);
+    function showMarkers(i) {
+            if (markers[i].getAnimation() !== null) {
+                markers[i].setAnimation(null);
             } else {
-                bounds.extend(place.geometry.location);
+                markers[i].setAnimation(google.maps.Animation.BOUNCE);
+                setTimeout(function() {
+                 markers[i].setAnimation(null);
+                }, 1800)
             }
-        }
-        map.fitBounds(bounds);
+            var infoWindow = new google.maps.InfoWindow();
+
+                // if a marker is clicked, show place details
+            getPlaces(markers[i], infoWindow);
      }
+
 
     // Place details search function - which is executed when marker is selected
     // for more details for user
@@ -359,7 +273,11 @@ ko.applyBindings(new ViewModel());
                 infowindow.open(map, marker);
                 infowindow.addListener('closeclick', function() {
                     infowindow.marker = null;
+                    marker.setAnimation(null);
                 });
+            }
+            else {
+                window.alert('We did not find any places matching that search');
             }
         });
      }
