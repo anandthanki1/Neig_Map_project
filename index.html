@@ -4,9 +4,9 @@
     <title> Neighborhood Map Pro </title>
     <meta name="viewport" content="initial-scale=1.0">
     <meta charset="utf-8">
-    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jquery-3.1.1.min.js"></script>
     <link rel="stylesheet" type="text/css" href="css/jasny-bootstrap.min.css">
-   <!--  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css"> -->
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
     <script type="text/javascript" src="js/jasny-bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.3.0/knockout-debug.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.js"></script>
@@ -31,30 +31,24 @@
             margin-left: 25px;
 
         }
-        input {
-            margin-top: 0;
-            border: 0px solid transparent;
-            border-radius: 0;
-            box-sizing: border-box;
-            -moz-box-sizing: border-box;
-            height: 32px;
-            outline: none;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-            font-family: Roboto;
-            margin-left: 3px;
-            padding: 0 ;
-            width: 96%;
+        select {
+            margin-left: 70px;
+            border: 1px solid #111;
+            background: transparent;
+            width: 150px;
+            padding: 5px 35px 5px 5px;
+            font-size: 16px;
+            border: 1px solid #ccc;
         }
         button {
             font-size: 19px;
             cursor: pointer;
         }
-        .but {
-            font-size: 13px;
-            border: #1d1f20  solid;
+        }
+        #wikihead{
             cursor: pointer;
         }
-        #wikihead, li {
+        li {
             cursor: pointer;
         }
         #filter {
@@ -62,29 +56,38 @@
         }
         @media screen and (min-width: 200px) and (max-width: 580px)
         {
-            input {
-                width: 85%;
-            }
-            .but {
-                font-size: 8px;
+            select {
+            margin-left: 70px;
+            border: 1px solid #111;
+            background: transparent;
+            width: 150px;
+            padding: 5px 0px 5px 5px;
+            font-size: 16px;
+            border: 1px solid #ccc;
             }
         }
         @media screen and (min-width: 600) and (max-width: 900px)
         {
-            input {
-                width: 55%;
-            }
-            .but {
-                font-size: 10px;
+            select {
+            margin-left: 70px;
+            border: 1px solid #111;
+            background: transparent;
+            width: 150px;
+            padding: 5px 0px 5px 5px;
+            font-size: 16px;
+            border: 1px solid #ccc;
             }
         }
-        @media screen and (min-width: 1100px)
+        @media screen and (min-width: 1000px) and (max-width: 1200px)
         {
-            input {
-                width: 96%;
-            }
-            .but {
-                font-size: 13px;
+            select {
+            margin-left: 70px;
+            border: 1px solid #111;
+            background: transparent;
+            width: 150px;
+            padding: 5px 0px 5px 5px;
+            font-size: 16px;
+            border: 1px solid #ccc;
             }
         }
 
@@ -97,22 +100,21 @@
   <h2 class="navmenu-brand"> Famous Places of New York </h2>
   <li class="dropdown" id="filter">
       <h3 class="dropdown-toggle navmenu-brand" data-toggle="dropdown"> Filter: <b class="caret"></b></h3>
-      <ul class="dropdown-menu navmenu-nav" role="menu">
-        <li data-bind="click: touristAtt"> Tourist's Attraction </li>
-        <li data-bind="click: businessPlace"> Business Places </li>
-        <li data-bind="click: transPort">  Transportation </a></li>
-        <li data-bind="click: all"> All Places </li>
-      </ul>
+      <select data-bind="options: filterList,
+                         value: selectedOption,
+                         optionsText: 'category',
+                         optionsCaption: 'All Locations'">
+        </select>
     </li>
     </div>
     <hr>
-      <ul class="nav navmenu-nav" id="filterlist" data-bind="foreach: locList">
-          <li data-bind="text: title, click: $parent.setLocation"></li>
+      <ul class="nav navmenu-nav" id="filterlist" data-bind="foreach: {data: getCurrentLocations(), as: 'locList'}">
+          <li data-bind="text: locList.title, click: getMarkInfo"></li>
       </ul>
   </div>
   <div class="wiki-container">
-  <h2 class="navmenu-brand" id="wikihead" data-bind="click: getWiki"> Wikipedia Links </h2>
-  <ul class="wiki-links">
+  <h2 class="navmenu-brand" id="wikihead"> Wikipedia Links </h2>
+  <ul data-bind="html: details">
   </ul>
   </div>
 </nav>
@@ -122,13 +124,11 @@
   </button>
 </div>
 </header>
-    <input type="text" placeholder="Enter the Address" id="schAdd">
-    <button type="button" id="letsgo" class=".but"> &#128269 </button>
     <div id="gmap"></div>
 <script src="js/lib/knockout-3.2.0.js"></script>
 <script src="js/app.js"></script>
-<script async defer
-                    src="https://maps.googleapis.com/maps/api/js?libraries=places,geometry&key=AIzaSyAEiFlJ19aQUKS9D1sDfdjYScKwrrjeLz8&callback=init">
+<script async defer onerror="errorHandling()"
+                    src="https://maps.googleapis.com/maps/api/js?libraries=places,geometry&key=AIzaSyAEiFlJ19aQUKS9D1sDfdjYScKwrrjeLz8&v=3&callback=init">
     </script>
 </body>
 </html>
