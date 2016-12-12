@@ -62,33 +62,37 @@ function init() {
 
 }
 
-
 var locArray = [
 
-    {
+        {
             title: 'Central Park',
             location: {lat: 40.785091 ,lng: -73.968285 },
-            id: 'ChIJ4zGFAZpYwokRGUGph3Mf37k'
+            id: 'ChIJ4zGFAZpYwokRGUGph3Mf37k',
+            category: 'Tourist Attraction'
         },
         {
             title: 'Statue of Liberty',
             location: {lat: 40.689247,lng: -74.044502},
-            id: 'ChIJPTacEpBQwokRKwIlDXelxkA'
+            id: 'ChIJPTacEpBQwokRKwIlDXelxkA',
+            category: 'Tourist Attraction'
         },
         {
             title: 'Empire State Building',
             location: {lat: 40.748817, lng: -73.985428},
-            id: 'ChIJaXQRs6lZwokRY6EFpJnhNNE'
+            id: 'ChIJaXQRs6lZwokRY6EFpJnhNNE',
+            category: 'Business Places'
         },
         {
             title: 'Rockefeller Center',
             location: {lat: 40.758438,lng: -73.978912},
-            id: 'ChIJ9U1mz_5YwokRosza1aAk0jM'
+            id: 'ChIJ9U1mz_5YwokRosza1aAk0jM',
+            category: 'Business Places'
         },
         {
             title: 'Grand Central Station',
             location: {lat: 40.752998,lng: -73.977056},
-            id: 'ChIJhRwB-yFawokRi0AhGH87UTc'
+            id: 'ChIJhRwB-yFawokRi0AhGH87UTc',
+            category: 'Transportation'
         }
 
     ];
