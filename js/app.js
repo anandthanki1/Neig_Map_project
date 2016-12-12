@@ -137,21 +137,15 @@ var ViewModel = function() {
     getCurrentLocations = function() {
         var selectedVal = this.selectedOption();
 
-        if (!selectedVal)
+       if (!selectedVal)
             return this.locList;
 
-        if (selectedVal) {
-            if (this.filterList()[0].category === 'Tourist Attraction') {
-               return this.locList.slice(0, 2);
-            }
-
-             if (this.filterList()[1].category === 'Business Places') {
-               return this.locList.slice(2, 4);
-            }
-
-             if (this.filterList()[2].category === 'Transportation') {
-             return this.locList.slice(4);
-            }
+       if (selectedVal) {
+            return ko.utils.arrayFilter(this.filterList(), function(place) {
+                var category = place.category;
+                var match = this.locList().includes(category);
+                return match;
+           });
         }
 
             return this.locList().filter(function(f) {
